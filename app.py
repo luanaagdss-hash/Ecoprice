@@ -75,7 +75,7 @@ if submitted:
     """
     try:
         res = openai.ChatCompletion.create(
-            model="gpt-4o-mini",  # substitua pelo modelo disponível
+            model="gpt-5",  # substitua pelo modelo disponível
             messages=[{"role":"user","content":prompt}],
             max_tokens=450,
             temperature=0.2
