@@ -61,31 +61,55 @@ if submitted:
 
     st.markdown(f"**Preço sugerido:** R$ {preco_otimo:.2f} (lucro estimado R$ {lucro_otimo:,.2f})")
 
-    # Geração de relatório com GPT
-    prompt = f"""
-    Você é um analista econômico. Dados: custo variável por unidade R$ {custo_variavel:.2f}, custo fixo mensal R$ {custo_fixo_mensal:.2f},
-    preço atual R$ {preco_atual:.2f}, volume mensal {volume_mensal}, preço médio concorrência R$ {preco_media_concorrencia:.2f}.
-    Estimativa de elasticidade utilizada: {elasticidade_guess}.
-    A simulação indica preço ótimo R$ {preco_otimo:.2f} com lucro estimado R$ {lucro_otimo:.2f}.
-    Produza um relatório curto (4 parágrafos) explicando:
-    1) interpretação microeconômica (elasticidade, margem, ponto de equilíbrio),
-    2) principais riscos e suposições,
-    3) recomendação prática de precificação e ações para teste (A/B pricing),
-    4) sugestões de métricas para acompanhar (CAC, LTV, churn, ticket médio).
-    """
-    try:
-        res = openai.ChatCompletion.create(
-            model="gpt-5",  # substitua pelo modelo disponível
-            messages=[{"role":"user","content":prompt}],
-            max_tokens=450,
-            temperature=0.2
-        )
-        report = res['choices'][0]['message']['content']
-    except Exception as e:
-        report = f"Erro ao gerar relatório via API: {e}"
+# ====== GERAR RELATÓRIO ECONÔMICO COM IA ======
 
-    st.subheader("Relatório gerado (IA)")
-    st.write(report)
+# Criação do prompt — o texto que será enviado ao modelo de IA
+prompt = f"""
+Você é um analista econômico. 
+Dados do produto:
+- Custo variável por unidade: R$ {custo_variavel:.2f}
+- Custo fixo mensal: R$ {custo_fixo_mensal:.2f}
+- Preço atual: R$ {preco_atual:.2f}
+- Volume mensal atual: {volume_mensal}
+- Preço médio da concorrência: R$ {preco_media_concorrencia:.2f}
 
-    # Opção de download do relatório
-    st.download_button("Download relatório (.txt)", report, file_name="relatorio_ecoprice.txt")
+A simulação indica:
+- Preço ótimo sugerido: R$ {preco_otimo:.2f}
+- Lucro estimado: R$ {lucro_otimo:,.2f}
+
+Produza um relatório curto e técnico (4 parágrafos) explicando:
+1) A interpretação microeconômica dos resultados (elasticidade, margem, ponto de equilíbrio);
+2) Os principais riscos e suposições dessa simulação;
+3) Uma recomendação prática de precificação e ações de teste (A/B pricing), com uma métrica para medir sucesso;
+4) Quais métricas financeiras acompanhar (CAC, LTV, ticket médio, margem, churn).
+
+Seja claro, direto e use linguagem de negócios.
+"""
+
+# Chamada à API da OpenAI
+try:
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",  # pode usar "gpt-4o" ou "gpt-5" se disponível na sua conta
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=450,
+        temperature=0.3
+    )
+
+    # Extrai o texto gerado
+    report = response["choices"][0]["message"]["content"]
+
+except Exception as e:
+    report = f"Erro ao gerar o relatório via OpenAI API: {e}"
+
+# Exibir o relatório no Streamlit
+st.subheader("📊 Relatório gerado pela IA")
+st.write(report)
+
+# Botão para download do relatório
+st.download_button(
+    label="Baixar relatório (.txt)",
+    data=report,
+    file_name="relatorio_ecoprice.txt",
+    mime="text/plain"
+)
+
