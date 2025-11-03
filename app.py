@@ -83,14 +83,19 @@ if submitted:
     Seja claro, direto e use linguagem de negócios.
     """
 
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=450,
-            temperature=0.3
-        )
-        report = response["choices"][0]["message"]["content"]
+from openai import OpenAI
+
+client = OpenAI(api_key=openai.api_key)
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=450,
+    temperature=0.3
+)
+
+report = response.choices[0].message.content
+
     except Exception as e:
         report = f"Erro ao gerar o relatório via OpenAI API: {e}"
 
